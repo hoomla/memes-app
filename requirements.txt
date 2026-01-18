@@ -1,2 +1,17 @@
 fastapi[standard]==0.128.0
 ruff==0.14.13
+
+# Database
+sqlalchemy==1.4.0
+psycopg2-binary==2.8.4
+
+# Security & Auth
+pyjwt==1.7.1
+cryptography==3.3.1
+requests==2.20.0
+
+# Utilities
+pyyaml==5.3.1
+jinja2==2.10.1
+pillow==8.0.0
+urllib3==1.24.1
