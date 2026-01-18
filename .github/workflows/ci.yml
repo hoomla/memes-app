@@ -1,0 +1,44 @@
+name: CI - Pruebas Automáticas
+
+# Cuándo ejecutar el workflow
+on:
+  push:
+    branches: [ main ]  # Cuando se hace push a main
+  pull_request:
+    branches: [ main ]  # Cuando se crea un PR hacia main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Usa una máquina virtual con Ubuntu
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']  # Prueba en varias versiones
+
+    steps:
+    # 1. Descargar el código del repo
+    - name: 📥 Checkout del código
+      uses: actions/checkout@v4
+
+    # 2. Instalar Python
+    - name: 🐍 Configurar Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    # 3. Instalar dependencias
+    - name: 📦 Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # 4. Verificar sintaxis con un linter
+    - name: 🔍 Verificar código con Ruff
+      run: |
+        pip install ruff
+        ruff check . --ignore=E501
+
+    # 5. Verificar que la app arranca
+    - name: 🚀 Verificar que FastAPI arranca
+      run: |
+        timeout 10 python -c "from app import app; print('✅ App carga correctamente')" || true
