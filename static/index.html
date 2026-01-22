@@ -23,6 +23,7 @@
                     document.documentElement.classList.add('dark');
                 }
             } catch (error) {
+                console.warn('No se pudo cargar la preferencia de tema.', error);
             }
         })();
     </script>
