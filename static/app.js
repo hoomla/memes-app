@@ -1,6 +1,7 @@
 // Variables globales
 let todosMemes = [];
 let favoritos = JSON.parse(localStorage.getItem('meme-favoritos') || '[]');
+const themeStorageKey = 'meme-theme';
 let filtrosActivos = {
     fuentes: [],
     busqueda: '',
@@ -11,6 +12,7 @@ let filtrosActivos = {
 // Cuando la página carga
 document.addEventListener('DOMContentLoaded', () => {
     cargarMemes();
+    configurarTema();
     configurarFiltros();
     configurarBuscador();
     configurarModal();
@@ -87,13 +89,41 @@ function mostrarMemes(memes) {
     });
 }
 
+function configurarTema() {
+    const toggleButton = document.getElementById('theme-toggle');
+    const toggleText = document.getElementById('theme-toggle-text');
+    if (!toggleButton || !toggleText) {
+        return;
+    }
+
+    const actualizarEstado = (theme) => {
+        const esOscuro = theme === 'dark';
+        document.documentElement.classList.toggle('dark', esOscuro);
+        toggleButton.setAttribute('aria-pressed', String(esOscuro));
+        toggleText.textContent = esOscuro ? 'Modo claro' : 'Modo oscuro';
+    };
+
+    const storedTheme = localStorage.getItem(themeStorageKey);
+    if (storedTheme) {
+        actualizarEstado(storedTheme);
+    } else {
+        actualizarEstado(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    toggleButton.addEventListener('click', () => {
+        const nuevoTema = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+        localStorage.setItem(themeStorageKey, nuevoTema);
+        actualizarEstado(nuevoTema);
+    });
+}
+
 // Crear una tarjeta de meme
 function crearTarjeta(meme) {
     const esFavorito = favoritos.includes(meme.id);
     
     // Crear el contenedor de la tarjeta
     const tarjeta = document.createElement('div');
-    tarjeta.className = 'meme-card bg-white rounded-lg overflow-hidden cursor-pointer';
+    tarjeta.className = 'meme-card bg-white rounded-lg overflow-hidden cursor-pointer dark:bg-gray-900 dark:border-gray-700';
     tarjeta.dataset.memeId = meme.id;
 
     // Crear contenedor de imagen con indicador de fuente
@@ -137,11 +167,11 @@ function crearTarjeta(meme) {
 
     // Crear barra de acciones
     const acciones = document.createElement('div');
-    acciones.className = 'flex items-center justify-start gap-4 p-3 border-t border-gray-100';
+    acciones.className = 'flex items-center justify-start gap-4 p-3 border-t border-gray-100 dark:border-gray-700 dark:bg-gray-900';
 
     // Botón favorito
     const btnFavorito = document.createElement('button');
-    btnFavorito.className = `action-btn favorito text-gray-400 hover:text-red-500 ${esFavorito ? 'active' : ''}`;
+    btnFavorito.className = `action-btn favorito text-gray-400 hover:text-red-500 dark:text-gray-400 ${esFavorito ? 'active' : ''}`;
     btnFavorito.title = 'Favorito';
     btnFavorito.innerHTML = `
         <svg class="w-5 h-5" fill="${esFavorito ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +185,7 @@ function crearTarjeta(meme) {
 
     // Botón descargar
     const btnDescargar = document.createElement('button');
-    btnDescargar.className = 'action-btn text-gray-400 hover:text-blue-500';
+    btnDescargar.className = 'action-btn text-gray-400 hover:text-blue-500 dark:text-gray-400';
     btnDescargar.title = 'Descargar';
     btnDescargar.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,7 +199,7 @@ function crearTarjeta(meme) {
 
     // Botón enlace
     const btnEnlace = document.createElement('button');
-    btnEnlace.className = 'action-btn text-gray-400 hover:text-green-500';
+    btnEnlace.className = 'action-btn text-gray-400 hover:text-green-500 dark:text-gray-400';
     btnEnlace.title = 'Copiar enlace';
     btnEnlace.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +277,7 @@ function copiarEnlace(meme) {
 // Mostrar notificación temporal
 function mostrarNotificacion(mensaje) {
     const notif = document.createElement('div');
-    notif.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse';
+    notif.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse dark:bg-gray-900';
     notif.textContent = mensaje;
     document.body.appendChild(notif);
     setTimeout(() => notif.remove(), 2000);
@@ -300,7 +330,7 @@ function configurarFiltros() {
         document.getElementById('buscador').value = '';
         
         document.querySelectorAll('.rating-filter').forEach(btn => {
-            btn.classList.remove('bg-yellow-100', 'border-yellow-400');
+            btn.classList.remove('bg-yellow-100', 'border-yellow-400', 'dark:bg-yellow-900/40', 'dark:border-yellow-500');
         });
         
         const soloFavoritosCheck = document.getElementById('solo-favoritos');
@@ -317,14 +347,14 @@ function configurarFiltros() {
             // Toggle: si ya está seleccionado, deseleccionar
             if (filtrosActivos.ratingMinimo === rating) {
                 filtrosActivos.ratingMinimo = 0;
-                btn.classList.remove('bg-yellow-100', 'border-yellow-400');
+                btn.classList.remove('bg-yellow-100', 'border-yellow-400', 'dark:bg-yellow-900/40', 'dark:border-yellow-500');
             } else {
                 // Deseleccionar otros
                 document.querySelectorAll('.rating-filter').forEach(b => {
-                    b.classList.remove('bg-yellow-100', 'border-yellow-400');
+                    b.classList.remove('bg-yellow-100', 'border-yellow-400', 'dark:bg-yellow-900/40', 'dark:border-yellow-500');
                 });
                 filtrosActivos.ratingMinimo = rating;
-                btn.classList.add('bg-yellow-100', 'border-yellow-400');
+                btn.classList.add('bg-yellow-100', 'border-yellow-400', 'dark:bg-yellow-900/40', 'dark:border-yellow-500');
             }
             
             aplicarFiltros();
